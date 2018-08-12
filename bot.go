@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 
@@ -28,13 +29,19 @@ type BotCommand struct {
 }
 
 const (
-	ErrTokenInvalid = "The provided Token is invalid"
+	ErrTokenInvalid       = "The provided Token is invalid"
+	ErrPrefixNotSupported = "The provided Prefix is not supported, " +
+		"please choose a non-word character or string (regexp: '\\W')"
 )
 
 func (bot *Bot) validate() error {
 	//Token is always 59 chars long
 	if len(bot.Token) != 59 {
 		return errors.New(ErrTokenInvalid)
+	}
+	r := regexp.MustCompile(`\w+`)
+	if !(len(bot.CommandPrefix) > 0) || r.MatchString(bot.CommandPrefix) {
+		return errors.New(ErrPrefixNotSupported)
 	}
 	return nil
 }
