@@ -1,6 +1,7 @@
 package disgobol
 
 import (
+	"regexp"
 	"strings"
 )
 
@@ -17,8 +18,10 @@ func MatchContains(match string) func(*MsgContext) bool {
 }
 
 func MatchContainsWord(match string) func(*MsgContext) bool {
+	// set multiline flag and match for whitespace to be able to match nonword words (which wouldn't work with \b)
+	r := regexp.MustCompile(`(?m)(\s|^)` + regexp.QuoteMeta(match) + `(\s|$)`)
 	return func(msg *MsgContext) bool {
-		return strings.Contains(msg.Content, " "+match+" ")
+		return r.MatchString(msg.Content)
 	}
 }
 

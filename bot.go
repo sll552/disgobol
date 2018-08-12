@@ -80,7 +80,7 @@ func (bot *Bot) AddCommand(cmd string, desc string, handler func(MsgContext) str
 		Function:    handler}
 	brt := MsgRoute{
 		ID:      cmd,
-		Matches: MatchStart(bcmd.Name),
+		Matches: MatchStart(bcmd.Name + " "),
 		Action: func(msg MsgContext) error {
 			resp := bcmd.Function(msg)
 			if len(resp) > 0 {
