@@ -64,7 +64,7 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 	return MsgRoute{
 		ID:      bot.CommandPrefix + "help",
 		Matches: MatchStart(bot.CommandPrefix + "help"),
-		Action: func(msg MsgContext) error {
+		Action: func(msg MsgContext) {
 			var cont strings.Builder
 			cont.WriteString("**These are the available commands for this Bot:**\n```YAML\n")
 			for _, cmd := range bot.commands {
@@ -74,8 +74,7 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 			}
 			cont.WriteString("```Invoke the commands with prefix `" +
 				bot.CommandPrefix + "`" + "  (e.g. `" + bot.CommandPrefix + "somecmd`)")
-			_, err := msg.RespondSimple(cont.String())
-			return err
+			_, _ = msg.RespondSimple(cont.String())
 		}}
 }
 
@@ -88,13 +87,11 @@ func (bot *Bot) AddCommand(cmd string, desc string, handler func(MsgContext) str
 	brt := MsgRoute{
 		ID:      cmd,
 		Matches: MatchStart(bcmd.Name + " "),
-		Action: func(msg MsgContext) error {
+		Action: func(msg MsgContext) {
 			resp := bcmd.Function(msg)
 			if len(resp) > 0 {
-				_, err := msg.RespondSimple(resp)
-				return err
+				_, _ = msg.RespondSimple(resp)
 			}
-			return nil
 		}}
 	_, err := bot.messageRouter.AddRoute(brt)
 	if err != nil {
