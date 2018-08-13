@@ -29,6 +29,7 @@ type BotCommand struct {
 }
 
 const (
+	ErrClientIDInvalid    = "The provided Client ID is invalid"
 	ErrTokenInvalid       = "The provided Token is invalid"
 	ErrPrefixNotSupported = "The provided Prefix is not supported, " +
 		"please choose a non-word character or string (regexp: '\\W')"
@@ -47,6 +48,9 @@ func (bot *Bot) validate() error {
 }
 
 func (bot *Bot) GetInviteURL() (string, error) {
+	if len(bot.ClientID) != 18 {
+		return "", errors.New(ErrClientIDInvalid)
+	}
 	u, err := url.Parse(discordgo.EndpointOauth2 + "authorize")
 	if err != nil {
 		return "", err
@@ -123,6 +127,7 @@ func (bot *Bot) Run() error {
 	// Add Handlers
 	bot.DiscordSession.AddHandler(bot.messageCreateHandler)
 
+	// TODO: Set gamestate to help command
 	err = bot.DiscordSession.Open()
 	defer bot.DiscordSession.Close()
 	if err != nil {

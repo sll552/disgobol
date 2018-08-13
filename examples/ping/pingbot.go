@@ -9,8 +9,8 @@ import (
 
 // You should get these either from a config file or via arguments/env
 const (
-	BotToken    = "123123"
-	BotClientID = "123123"
+	BotToken    = "asdasdasdasdasd"
+	BotClientID = "123123123123"
 	BotPrefix   = "!"
 )
 
