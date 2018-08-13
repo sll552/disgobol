@@ -2,6 +2,7 @@ package disgobol
 
 import (
 	"errors"
+	"reflect"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -18,10 +19,10 @@ const (
 
 // Creates a MsgContext instance from a discordgo event
 func NewMsgContext(evt interface{}, session *discordgo.Session) (MsgContext, error) {
-	switch t := evt.(type) {
+	switch evt.(type) {
 	case discordgo.MessageCreate:
 		e := evt.(discordgo.MessageCreate)
-		return MsgContext{Message: e.Message, EventType: t, Session: session}, nil
+		return MsgContext{Message: e.Message, EventType: reflect.TypeOf(e), Session: session}, nil
 	}
 	return MsgContext{}, errors.New(ErrNoCtxForEvt)
 }
