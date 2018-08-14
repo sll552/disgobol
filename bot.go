@@ -127,6 +127,10 @@ func (bot *Bot) Run() error {
 	// Add Handlers
 	bot.DiscordSession.AddHandler(bot.messageCreateHandler)
 
+	// Handle OS signals
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+
 	// TODO: Set gamestate to help command
 	err = bot.DiscordSession.Open()
 	defer bot.DiscordSession.Close()
@@ -134,9 +138,6 @@ func (bot *Bot) Run() error {
 		return err
 	}
 
-	// Handle OS signals
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
 	return nil
