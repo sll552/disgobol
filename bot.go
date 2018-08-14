@@ -76,6 +76,8 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 				cont.WriteString(strings.TrimPrefix(cmd.Name, bot.CommandPrefix) + ": ")
 				cont.WriteString(cmd.Description + "\n")
 			}
+			// Always add help command
+			cont.WriteString("help: Display this message\n")
 			cont.WriteString("```Invoke the commands with prefix `" +
 				bot.CommandPrefix + "`" + "  (e.g. `" + bot.CommandPrefix + "somecmd`)")
 			_, _ = msg.RespondSimple(cont.String())
@@ -138,6 +140,9 @@ func (bot *Bot) Run() error {
 		return err
 	}
 
+	_ = bot.DiscordSession.UpdateStatus(0, bot.CommandPrefix+"help")
+
+	// Wait for Signal
 	<-sc
 
 	return nil
