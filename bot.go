@@ -32,7 +32,7 @@ const (
 	ErrClientIDInvalid    = "The provided Client ID is invalid"
 	ErrTokenInvalid       = "The provided Token is invalid"
 	ErrPrefixNotSupported = "The provided Prefix is not supported, " +
-		"please choose a non-word character or string (regexp: '\\W')"
+		"please choose a non-word character or string (regexp: '\\W+')"
 )
 
 func (bot *Bot) validate() error {
