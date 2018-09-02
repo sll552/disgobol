@@ -15,6 +15,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/kballard/go-shellquote"
+  packages = ["."]
+  revision = "95032a82bc518f77982ea72343cc1ade730072f0"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = [
     "internal/subtle",
@@ -27,6 +33,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cf20d9712009652acc4f2942c05ef2c99fa297b952be4d1e22fd11a4a12eb581"
+  inputs-digest = "454054e16978d3bf435b276c4430bbca303e67a01e08ea1c41eac73c36009108"
   solver-name = "gps-cdcl"
   solver-version = 1

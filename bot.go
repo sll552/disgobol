@@ -25,6 +25,7 @@ type BotCommand struct {
 	Name        string
 	Description string
 	Route       *MsgRoute
+	Args        map[string]interface{} // This has the form of ["description"]example (e.g. ["this is a bool arg"] = true)
 	Function    func(MsgContext) string
 }
 
@@ -47,6 +48,7 @@ func (bot *Bot) validate() error {
 	return nil
 }
 
+// GetInviteURL returns the invite URL for this bot if a valid client id was provided
 func (bot *Bot) GetInviteURL() (string, error) {
 	if len(bot.ClientID) != 18 {
 		return "", errors.New(ErrClientIDInvalid)
@@ -84,12 +86,17 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 		}}
 }
 
-// TODO: Arguments for commands
+// AddCommand adds a new command to the bot
 func (bot *Bot) AddCommand(bcmd BotCommand) error {
 	brt := MsgRoute{
 		ID:      bcmd.Name,
 		Matches: MatchStartWord(bot.CommandPrefix + bcmd.Name),
 		Action: func(msg MsgContext) {
+			err := msg.ParseArgs(&bcmd.Args)
+			if err != nil {
+				_, _ = msg.RespondError("Parsing arguments failed", err)
+				return
+			}
 			resp := bcmd.Function(msg)
 			if len(resp) > 0 {
 				_, _ = msg.RespondSimple(resp)
@@ -104,6 +111,8 @@ func (bot *Bot) AddCommand(bcmd BotCommand) error {
 	return nil
 }
 
+// Run starts the bot and does not return until an os signal is received (e.g. SIGTERM)
+// it should be called last in your bot implementation
 func (bot *Bot) Run() error {
 	err := bot.validate()
 	if err != nil {
