@@ -20,7 +20,7 @@ const (
 	ErrRouteAlreadyExsits = "Route already exists"
 )
 
-// Get a route by its ID, default route does not count as route in this case
+// GetRoute gets a route by its ID, default route does not count as route in this case
 // if no route is found with the given ID nil is returned
 func (rt *MsgRouter) GetRoute(id string) *MsgRoute {
 	for _, r := range rt.routes {
@@ -31,7 +31,7 @@ func (rt *MsgRouter) GetRoute(id string) *MsgRoute {
 	return nil
 }
 
-// Add a route to this router, returns the route added or if a route already exists
+// AddRoute adds a route to this router, returns the route added or if a route already exists
 // the existing route and an error
 func (rt *MsgRouter) AddRoute(nr MsgRoute) (*MsgRoute, error) {
 	if r := rt.GetRoute(nr.ID); r != nil {
@@ -41,7 +41,7 @@ func (rt *MsgRouter) AddRoute(nr MsgRoute) (*MsgRoute, error) {
 	return &nr, nil
 }
 
-// Find all matching routes for the given MsgContext and execute their Action function,
+// Route finds all matching routes for the given MsgContext and execute their Action function,
 // if no route matches the default route is checked and executed if it matches
 // returns errors if no routes are defined or no routes match
 func (rt *MsgRouter) Route(msg MsgContext) error {

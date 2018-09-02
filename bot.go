@@ -85,24 +85,21 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 }
 
 // TODO: Arguments for commands
-func (bot *Bot) AddCommand(cmd string, desc string, handler func(MsgContext) string) error {
-	bcmd := BotCommand{
-		Name:        bot.CommandPrefix + cmd,
-		Description: desc,
-		Function:    handler}
+func (bot *Bot) AddCommand(bcmd BotCommand) error {
 	brt := MsgRoute{
-		ID:      cmd,
-		Matches: MatchStart(bcmd.Name + " "),
+		ID:      bcmd.Name,
+		Matches: MatchStart(bot.CommandPrefix + bcmd.Name + " "),
 		Action: func(msg MsgContext) {
 			resp := bcmd.Function(msg)
 			if len(resp) > 0 {
 				_, _ = msg.RespondSimple(resp)
 			}
 		}}
-	_, err := bot.messageRouter.AddRoute(brt)
+	cmdrt, err := bot.messageRouter.AddRoute(brt)
 	if err != nil {
 		return err
 	}
+	bcmd.Route = cmdrt
 	bot.commands = append(bot.commands, &bcmd)
 	return nil
 }

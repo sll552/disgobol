@@ -91,17 +91,29 @@ func TestBot_AddCommand(t *testing.T) {
 		CommandPrefix: "!",
 		messageRouter: MsgRouter{},
 	}
-
-	err := bot.AddCommand("testcmd", "a testcommand", func(msg MsgContext) string { return "" })
+	err := bot.AddCommand(
+		BotCommand{
+			Name:        "testcmd",
+			Description: "a testcommand",
+			Function:    func(msg MsgContext) string { return "" },
+		})
 	containscmd := false
+	var bcmd *BotCommand
+	var cmdrt *MsgRoute
 	for _, cmd := range bot.commands {
-		if cmd.Name == "!testcmd" {
+		if cmd.Name == "testcmd" {
 			containscmd = true
+			bcmd = cmd
 		}
 	}
 	if containscmd {
-		cmdrt := bot.messageRouter.GetRoute("testcmd")
+		cmdrt = bot.messageRouter.GetRoute("testcmd")
 		if cmdrt == nil {
+			containscmd = false
+		}
+	}
+	if containscmd {
+		if cmdrt != bcmd.Route {
 			containscmd = false
 		}
 	}

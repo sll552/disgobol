@@ -7,7 +7,7 @@ import (
 	"github.com/sll552/disgobol"
 )
 
-// You should get these either from a config file or via arguments/env
+// You should get these either from a config file or via arguments/environment
 const (
 	BotToken    = "asdasdasdasdasd"
 	BotClientID = "123123123123"
@@ -24,21 +24,23 @@ func main() {
 
 	fmt.Println("Invite URL: " + invurl)
 
-	err = bot.AddCommand("ping", "Responds with pong and time taken", func(msg disgobol.MsgContext) string {
-		tbef := time.Now()
-		resp, err := msg.RespondSimple("Pong")
-		if err != nil {
-			fmt.Println("Error while sending message: " + err.Error())
-		}
-		taft := time.Now()
-
-		_, err = resp.EditSimple(resp.Content + " time taken: " + taft.Sub(tbef).String())
-		if err != nil {
-			fmt.Println("Error while editing message: " + err.Error())
-		}
-
-		return ""
-	})
+	err = bot.AddCommand(
+		disgobol.BotCommand{
+			Name:        "ping",
+			Description: "Responds with pong and time taken",
+			Function: func(msg disgobol.MsgContext) string {
+				tbef := time.Now()
+				resp, err := msg.RespondSimple("Pong")
+				if err != nil {
+					fmt.Println("Error while sending message: " + err.Error())
+				}
+				taft := time.Now()
+				_, err = resp.EditSimple(resp.Content + " time taken: " + taft.Sub(tbef).String())
+				if err != nil {
+					fmt.Println("Error while editing message: " + err.Error())
+				}
+				return ""
+			}})
 	if err != nil {
 		fmt.Println("Error while adding command: " + err.Error())
 	}
