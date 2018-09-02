@@ -66,7 +66,7 @@ func (bot *Bot) GetInviteURL() (string, error) {
 
 func (bot *Bot) generateHelpCommand() MsgRoute {
 	return MsgRoute{
-		ID:      bot.CommandPrefix + "help",
+		ID:      "help",
 		Matches: MatchStart(bot.CommandPrefix + "help"),
 		Action: func(msg MsgContext) {
 			var cont strings.Builder
@@ -88,7 +88,7 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 func (bot *Bot) AddCommand(bcmd BotCommand) error {
 	brt := MsgRoute{
 		ID:      bcmd.Name,
-		Matches: MatchStart(bot.CommandPrefix + bcmd.Name + " "),
+		Matches: MatchStartWord(bot.CommandPrefix + bcmd.Name),
 		Action: func(msg MsgContext) {
 			resp := bcmd.Function(msg)
 			if len(resp) > 0 {
@@ -118,10 +118,11 @@ func (bot *Bot) Run() error {
 	}
 
 	// Generate default route
-	defrt, _ := bot.messageRouter.AddRoute(bot.generateHelpCommand())
+	helprt := bot.generateHelpCommand()
+	_, _ = bot.messageRouter.AddRoute(helprt)
 	// This will match only if no other route matches, so match for the prefix to catch all commands that don't exist
-	defrt.Matches = MatchStart(bot.CommandPrefix)
-	bot.messageRouter.DefaultRoute = defrt
+	helprt.Matches = MatchStart(bot.CommandPrefix)
+	bot.messageRouter.DefaultRoute = &helprt
 
 	// Add Handlers
 	bot.DiscordSession.AddHandler(bot.messageCreateHandler)

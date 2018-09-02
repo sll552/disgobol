@@ -25,6 +25,14 @@ func MatchContainsWord(match string) func(*MsgContext) bool {
 	}
 }
 
+func MatchStartWord(match string) func(*MsgContext) bool {
+	// set multiline flag and match for whitespace to be able to match nonword words (which wouldn't work with \b)
+	r := regexp.MustCompile(`^` + regexp.QuoteMeta(match) + `(\s|$)`)
+	return func(msg *MsgContext) bool {
+		return r.MatchString(msg.Content)
+	}
+}
+
 func MatchMentioned(username string) func(*MsgContext) bool {
 	return func(msg *MsgContext) bool {
 		for _, m := range msg.Mentions {

@@ -45,6 +45,8 @@ func TestMatchStart(t *testing.T) {
 		{name: "case2", args: args{match: "Simple"}, input: "Simple text starting with simple", want: true},
 		{name: "endswith", args: args{match: "simple"}, input: "text ending with simple", want: false},
 		{name: "whitespace", args: args{match: "simple"}, input: "   simple text ending with simple", want: false},
+		{name: "single", args: args{match: "simple"}, input: "simple", want: true},
+		{name: "singlews", args: args{match: "simple"}, input: "simple        ", want: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,6 +128,32 @@ func TestMatchMentioned(t *testing.T) {
 			got := MatchMentioned(tt.args.match)(createMessageContextWithMentions(tt.input, tt.mentions))
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MatchMentioned() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMatchStartWord(t *testing.T) {
+	tests := []testdef{
+		{name: "match1", args: args{match: "simple"}, input: "simple text starting with", want: true},
+		{name: "match2", args: args{match: "simple"}, input: "sample text starting with", want: false},
+		{name: "match3", args: args{match: "simple"}, input: "simple", want: true},
+		{name: "match4", args: args{match: "simple"}, input: "simple          ", want: true},
+		{name: "case1", args: args{match: "simple"}, input: "Simple text starting with", want: false},
+		{name: "case2", args: args{match: "Simple"}, input: "Simple text starting with", want: true},
+		{name: "endswith", args: args{match: "simple"}, input: "text ending with simple", want: false},
+		{name: "middle", args: args{match: "simple"}, input: "text simple \nending with", want: false},
+		{name: "inword1", args: args{match: "simple"}, input: "simpleending text  with", want: false},
+		{name: "inword2", args: args{match: "simple"}, input: "sim\npleending with", want: false},
+		{name: "regex1", args: args{match: "[a-z]+"}, input: "textsimpleending with", want: false},
+		{name: "regex2", args: args{match: "[a-z]+"}, input: "text \n[a-z]+ with", want: false},
+		{name: "regex3", args: args{match: "[a-z]+"}, input: "[a-z]+ text with", want: true},
+		{name: "regex4", args: args{match: "[a-z]+"}, input: "[a-z]+text with", want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MatchStartWord(tt.args.match)(createMessageContext(tt.input)); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MatchStartWord() = %v, want %v", got, tt.want)
 			}
 		})
 	}
