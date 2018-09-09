@@ -40,3 +40,40 @@ func TestNewMsgContext(t *testing.T) {
 		return
 	}
 }
+
+func TestMsgContext_ParseArgs(t *testing.T) {
+	type args struct {
+		args *map[string]interface{}
+	}
+
+	// TODO: Add more testcases
+	tests := []struct {
+		name    string
+		ctx     MsgContext
+		args    args
+		want    []interface{}
+		wantErr bool
+	}{
+		{
+			name: "simple",
+			ctx: MsgContext{
+				Message: &discordgo.Message{
+					Content: "cmd 345 false 2.54",
+				},
+			},
+			args: args{
+				args: &map[string]interface{}{"int": 123, "bool": true, "float": 1.234},
+			},
+			want:    []interface{}{345, false, 2.54},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.ctx.ParseArgs(tt.args.args)
+			if (err != nil) != tt.wantErr && !reflect.DeepEqual(tt.ctx.Args, tt.want) {
+				t.Errorf("MsgContext.ParseArgs() error = %v, wantErr %v, want: %v, got: %v", err, tt.wantErr, tt.want, tt.ctx.Args)
+			}
+		})
+	}
+}
