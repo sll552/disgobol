@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/sll552/disgobol"
 )
@@ -30,20 +29,11 @@ func main() {
 
 	err = bot.AddCommand(
 		disgobol.BotCommand{
-			Name:        "ping",
-			Description: "Responds with pong and time taken",
+			Name:        "hello",
+			Description: "Responds with greeting for the given name",
+			Args:        []disgobol.CommandArg{{Name: "Who", Description: "Who to greet", Example: "test"}},
 			Function: func(msg disgobol.MsgContext) string {
-				tbef := time.Now()
-				resp, err := msg.RespondSimple("Pong")
-				if err != nil {
-					fmt.Println("Error while sending message: " + err.Error())
-				}
-				taft := time.Now()
-				_, err = resp.EditSimple(resp.Content + " time taken: " + taft.Sub(tbef).String())
-				if err != nil {
-					fmt.Println("Error while editing message: " + err.Error())
-				}
-				return ""
+				return "hello " + msg.Args["Who"].(string)
 			}})
 	if err != nil {
 		fmt.Println("Error while adding command: " + err.Error())
