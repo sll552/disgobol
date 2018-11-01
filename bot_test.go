@@ -209,7 +209,10 @@ func TestBot_messageCreateHandler(t *testing.T) {
 
 func TestBot_Run(t *testing.T) {
 	errAuthFailed := "websocket: close 4004: Authentication failed."
-	emptySession, _ := discordgo.New()
+	emptySession, err := discordgo.New()
+	if err != nil {
+		t.Error("Could not setup empty Session")
+	}
 
 	tests := []struct {
 		name    string

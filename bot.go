@@ -25,7 +25,7 @@ type BotCommand struct {
 	Name        string
 	Description string
 	Route       *MsgRoute
-	Args        map[string]interface{} // This has the form of ["description"]example (e.g. ["this is a bool arg"] = true)
+	Args        []CommandArg
 	Function    func(MsgContext) string
 }
 
@@ -70,6 +70,7 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 	return MsgRoute{
 		ID:      "help",
 		Matches: MatchStart(bot.CommandPrefix + "help"),
+		// #nosec G104
 		Action: func(msg MsgContext) {
 			var cont strings.Builder
 			cont.WriteString("**These are the available commands for this Bot:**\n```YAML\n")
@@ -77,6 +78,13 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 				// Cut the prefix for YAML to work
 				cont.WriteString(strings.TrimPrefix(cmd.Name, bot.CommandPrefix) + ": ")
 				cont.WriteString(cmd.Description + "\n")
+				if len(cmd.Args) > 0 {
+					cont.WriteString("  Arguments:\n")
+					for _, carg := range cmd.Args {
+						cont.WriteString("    - " + carg.Name + ": ")
+						cont.WriteString(carg.Description + "\n")
+					}
+				}
 			}
 			// Always add help command
 			cont.WriteString("help: Display this message\n")
@@ -91,6 +99,7 @@ func (bot *Bot) AddCommand(bcmd BotCommand) error {
 	brt := MsgRoute{
 		ID:      bcmd.Name,
 		Matches: MatchStartWord(bot.CommandPrefix + bcmd.Name),
+		// #nosec G104
 		Action: func(msg MsgContext) {
 			err := msg.ParseArgs(&bcmd.Args)
 			if err != nil {
@@ -128,7 +137,10 @@ func (bot *Bot) Run() error {
 
 	// Generate default route
 	helprt := bot.generateHelpCommand()
-	_, _ = bot.messageRouter.AddRoute(helprt)
+	_, err = bot.messageRouter.AddRoute(helprt)
+	if err != nil {
+		return err
+	}
 	// This will match only if no other route matches, so match for the prefix to catch all commands that don't exist
 	helprt.Matches = MatchStart(bot.CommandPrefix)
 	bot.messageRouter.DefaultRoute = &helprt
@@ -140,13 +152,13 @@ func (bot *Bot) Run() error {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
-	// TODO: Set gamestate to help command
 	err = bot.DiscordSession.Open()
 	defer bot.DiscordSession.Close()
 	if err != nil {
 		return err
 	}
 
+	// #nosec G104
 	_ = bot.DiscordSession.UpdateStatus(0, bot.CommandPrefix+"help")
 
 	// Wait for Signal
@@ -164,5 +176,6 @@ func (bot *Bot) messageCreateHandler(s *discordgo.Session, m *discordgo.MessageC
 	if err != nil {
 		return
 	}
+	// #nosec G104
 	_ = bot.messageRouter.Route(msgctx)
 }

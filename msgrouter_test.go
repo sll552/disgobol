@@ -121,6 +121,7 @@ func TestMsgRouter_Route(t *testing.T) {
 	}
 
 	// Add a single route that should match
+	// #nosec G104
 	_, _ = rt.AddRoute(MsgRoute{
 		Action:  handler1,
 		Matches: MatchStart("testmessage"),
@@ -136,6 +137,7 @@ func TestMsgRouter_Route(t *testing.T) {
 	}
 
 	// Add a second route that should match
+	// #nosec G104
 	_, _ = rt.AddRoute(MsgRoute{
 		Action:  handler2,
 		Matches: MatchContains("test"),
@@ -156,6 +158,7 @@ func TestMsgRouter_Route(t *testing.T) {
 	handler2Called = int32(0)
 	handler3Called = int32(0)
 	// Add route that doesnt match
+	// #nosec G104
 	_, _ = rt.AddRoute(MsgRoute{
 		Action:  handler1,
 		Matches: MatchStart("simple"),

@@ -14,12 +14,18 @@ type MsgContext struct {
 	*discordgo.Message
 	EventType interface{}
 	Session   *discordgo.Session
-	Args      []interface{}
+	Args      map[string]interface{}
+}
+
+type CommandArg struct {
+	Name        string
+	Description string
+	Example     interface{}
 }
 
 const (
-	ErrNoCtxForEvt      = "No MsgContext could be created for the given type"
-	ErrTooManyArguments = "Too many arguments provided"
+	ErrNoCtxForEvt    = "No MsgContext could be created for the given type"
+	ErrArgCntMismatch = "Argument count does not match expected number of arguments"
 )
 
 // NewMsgContext creates a MsgContext instance from a discordgo event
@@ -59,10 +65,15 @@ func (msgCtx *MsgContext) EditSimple(newCont string) (*MsgContext, error) {
 	return &MsgContext{Message: rmsg, Session: msgCtx.Session}, err
 }
 
-// ParseArgs parses arguments from the current message and filling the MsgContext.Args array
+// ParseArgs parses arguments from the current message and fills the MsgContext.Args array
 // according to the given argument map.
 // An Error is returned if argument parsing fails or the types do not match
-func (msgCtx *MsgContext) ParseArgs(args *map[string]interface{}) error {
+func (msgCtx *MsgContext) ParseArgs(args *[]CommandArg) error {
+	// Dont do anything if no arguments are defined
+	if len(*args) == 0 {
+		return nil
+	}
+
 	whitespaceIndx := strings.IndexAny(msgCtx.Content, " \n\t")
 	if whitespaceIndx < 0 {
 		whitespaceIndx = len(msgCtx.Content)
@@ -78,42 +89,32 @@ func (msgCtx *MsgContext) ParseArgs(args *map[string]interface{}) error {
 		tmp[i] = v
 	}
 	if len(tmp) != len(*args) {
-		return errors.New(ErrTooManyArguments)
+		return errors.New(ErrArgCntMismatch)
 	}
 
 	// Cast args to their required type
-	i := 0
-	for _, arg := range *args {
-		switch arg.(type) {
+	for idx, arg := range *args {
+		switch arg.Example.(type) {
 		case int:
-			tmp[i], err = strconv.ParseInt(tmp[i].(string), 0, 64)
-			if err != nil {
-				return err
-			}
+			tmp[idx], err = strconv.ParseInt(tmp[idx].(string), 0, 64)
 		case bool:
-			tmp[i], err = strconv.ParseBool(tmp[i].(string))
-			if err != nil {
-				return err
-			}
-		case float32:
-			tmp[i], err = strconv.ParseFloat(tmp[i].(string), 32)
-			if err != nil {
-				return err
-			}
+			tmp[idx], err = strconv.ParseBool(tmp[idx].(string))
 		case float64:
-			tmp[i], err = strconv.ParseFloat(tmp[i].(string), 64)
-			if err != nil {
-				return err
-			}
-		case uint:
-			tmp[i], err = strconv.ParseUint(tmp[i].(string), 0, 64)
-			if err != nil {
-				return err
-			}
+			tmp[idx], err = strconv.ParseFloat(tmp[idx].(string), 64)
 		}
-		i++
+		if err != nil {
+			return err
+		}
 	}
-	msgCtx.Args = tmp
+	// build the resulting map and use index for arguments without a name
+	msgCtx.Args = make(map[string]interface{})
+	for idx, arg := range *args {
+		if len(arg.Name) == 0 {
+			msgCtx.Args[strconv.Itoa(idx)] = tmp[idx]
+		} else {
+			msgCtx.Args[arg.Name] = tmp[idx]
+		}
+	}
 
 	return err
 }
