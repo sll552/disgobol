@@ -5,12 +5,10 @@ go:
   - master
 
 install:
-  - go get golang.org/x/tools/cmd/cover
-  - go get github.com/mattn/goveralls
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
   - dep ensure
 
 script:
-  - go test -v -covermode=count -coverprofile=coverage.out
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
 after_success:
-  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+  - bash <(curl -s https://codecov.io/bash)
