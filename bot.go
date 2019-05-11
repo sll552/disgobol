@@ -146,6 +146,7 @@ func (bot *Bot) Run() error {
 	bot.messageRouter.DefaultRoute = &helprt
 
 	// Add Handlers
+	bot.DiscordSession.AddHandler(bot.readyHandler)
 	bot.DiscordSession.AddHandler(bot.messageCreateHandler)
 
 	// Handle OS signals
@@ -158,13 +159,14 @@ func (bot *Bot) Run() error {
 		return err
 	}
 
-	// #nosec G104
-	_ = bot.DiscordSession.UpdateStatus(0, bot.CommandPrefix+"help")
-
 	// Wait for Signal
 	<-sc
 
 	return nil
+}
+
+func (bot *Bot) readyHandler(s *discordgo.Session, m *discordgo.Ready) {
+	_ = s.UpdateStatus(0, bot.CommandPrefix+"help")
 }
 
 func (bot *Bot) messageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
