@@ -24,8 +24,8 @@ type CommandArg struct {
 }
 
 const (
-	ErrNoCtxForEvt    = "No MsgContext could be created for the given type"
-	ErrArgCntMismatch = "Argument count does not match expected number of arguments"
+	ErrNoCtxForEvt    = "no MsgContext could be created for the given type"
+	ErrArgCntMismatch = "argument count does not match expected number of arguments"
 )
 
 // NewMsgContext creates a MsgContext instance from a discordgo event

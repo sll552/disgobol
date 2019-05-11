@@ -17,9 +17,9 @@ type MsgRoute struct {
 }
 
 const (
-	ErrNoRoutes           = "No routes defined"
-	ErrNoRoute            = "No route matched"
-	ErrRouteAlreadyExsits = "Route already exists"
+	ErrNoRoutes           = "no routes defined"
+	ErrNoRoute            = "no route matched"
+	ErrRouteAlreadyExsits = "route already exists"
 )
 
 // GetRoute gets a route by its ID, default route does not count as route in this case

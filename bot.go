@@ -30,9 +30,9 @@ type BotCommand struct {
 }
 
 const (
-	ErrClientIDInvalid    = "The provided Client ID is invalid"
-	ErrTokenInvalid       = "The provided Token is invalid"
-	ErrPrefixNotSupported = "The provided Prefix is not supported, " +
+	ErrClientIDInvalid    = "the provided Client ID is invalid"
+	ErrTokenInvalid       = "the provided Token is invalid"
+	ErrPrefixNotSupported = "the provided Prefix is not supported, " +
 		"please choose a non-word character or string (regexp: '\\W+')"
 )
 
