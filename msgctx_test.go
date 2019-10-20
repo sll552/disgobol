@@ -1,6 +1,7 @@
 package disgobol
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -217,6 +218,30 @@ func TestMsgContext_ParseArgs(t *testing.T) {
 			err := tt.ctx.ParseArgs(tt.args.args)
 			if ((err != nil) != tt.wantErr || (err != nil && tt.errTxt != err.Error())) || !reflect.DeepEqual(tt.ctx.Args, tt.want) {
 				t.Errorf("MsgContext.ParseArgs() error = %v, wantErr %v, expectedErr %v, want: %v, got: %v", err, tt.wantErr, tt.errTxt, tt.want, tt.ctx.Args)
+			}
+		})
+	}
+}
+
+func Test_generateErrorString(t *testing.T) {
+	type args struct {
+		msg    string
+		srcerr error
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "msg and error", args: args{msg: "testmsg", srcerr: errors.New("testerr")}, want: "```LDIF\nError: testmsg: testerr```"},
+		{name: "msg only", args: args{msg: "testmsg", srcerr: nil}, want: "```LDIF\nError: testmsg: an undefined error occurred```"},
+		{name: "error only", args: args{msg: "", srcerr: errors.New("testerr")}, want: "```LDIF\nError: testerr```"},
+		{name: "nothing", args: args{msg: "", srcerr: nil}, want: "```LDIF\nError: an undefined error occurred```"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := generateErrorString(tt.args.msg, tt.args.srcerr); got != tt.want {
+				t.Errorf("generateErrorString() = %v, want %v", got, tt.want)
 			}
 		})
 	}

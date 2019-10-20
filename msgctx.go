@@ -35,6 +35,7 @@ func NewMsgContext(evt interface{}, session *discordgo.Session) (MsgContext, err
 		e := evt.(discordgo.MessageCreate)
 		return MsgContext{Message: e.Message, EventType: reflect.TypeOf(e), Session: session}, nil
 	}
+
 	return MsgContext{}, errors.New(ErrNoCtxForEvt)
 }
 
@@ -45,16 +46,31 @@ func (msgCtx *MsgContext) RespondSimple(msg string) (*MsgContext, error) {
 	return &MsgContext{Message: rmsg, Session: msgCtx.Session}, err
 }
 
+func generateErrorString(msg string, srcerr error) string {
+	var genmsg strings.Builder
+
+	genmsg.WriteString("```LDIF\nError: ")
+
+	if len(msg) != 0 {
+		genmsg.WriteString(msg)
+		genmsg.WriteString(": ")
+	}
+
+	if srcerr != nil {
+		genmsg.WriteString(srcerr.Error())
+	} else {
+		genmsg.WriteString("an undefined error occurred")
+	}
+
+	genmsg.WriteString("```")
+
+	return genmsg.String()
+}
+
 // RespondError responds to the message in this context with an error message that is specially formated
-// the error object can be nil if not the message will be printed too
 // Returns a MsgContext instance for the error message created
 func (msgCtx *MsgContext) RespondError(msg string, srcerr error) (*MsgContext, error) {
-	msg = "```LDIF\nError: " + msg
-	if srcerr != nil {
-		msg += ": " + srcerr.Error()
-	}
-	msg += "```"
-	rmsg, err := msgCtx.Session.ChannelMessageSend(msgCtx.ChannelID, msg)
+	rmsg, err := msgCtx.Session.ChannelMessageSend(msgCtx.ChannelID, generateErrorString(msg, srcerr))
 	return &MsgContext{Message: rmsg, Session: msgCtx.Session}, err
 }
 
@@ -81,13 +97,17 @@ func (msgCtx *MsgContext) ParseArgs(args *[]CommandArg) error {
 	// remove the actual command
 	argstr := strings.TrimSpace(strings.TrimPrefix(msgCtx.Content, msgCtx.Content[:whitespaceIndx]))
 	parsedArgs, err := shellquote.Split(argstr)
+
 	if err != nil {
 		return err
 	}
+
 	tmp := make([]interface{}, len(parsedArgs))
+
 	for i, v := range parsedArgs {
 		tmp[i] = v
 	}
+
 	if len(tmp) != len(*args) {
 		return errors.New(ErrArgCntMismatch)
 	}
@@ -102,12 +122,14 @@ func (msgCtx *MsgContext) ParseArgs(args *[]CommandArg) error {
 		case float64:
 			tmp[idx], err = strconv.ParseFloat(tmp[idx].(string), 64)
 		}
+
 		if err != nil {
 			return err
 		}
 	}
 	// build the resulting map and use index for arguments without a name
 	msgCtx.Args = make(map[string]interface{})
+
 	for idx, arg := range *args {
 		if len(arg.Name) == 0 {
 			msgCtx.Args[strconv.Itoa(idx)] = tmp[idx]
@@ -117,4 +139,54 @@ func (msgCtx *MsgContext) ParseArgs(args *[]CommandArg) error {
 	}
 
 	return err
+}
+
+// GetChannel returns the discordgo Channel of this message
+func (msgCtx *MsgContext) GetChannel() (*discordgo.Channel, error) {
+	return msgCtx.Session.State.Channel(msgCtx.ChannelID)
+}
+
+// GetGuild returns the discordgo Guild of this message
+func (msgCtx *MsgContext) GetGuild() (*discordgo.Guild, error) {
+	c, err := msgCtx.GetChannel()
+	if err != nil {
+		return nil, err
+	}
+
+	return msgCtx.Session.State.Guild(c.GuildID)
+}
+
+// JoinVoiceChannel joins the voice channel with the given id and returns a discordgo.VoiceConnection on success
+func (msgCtx *MsgContext) JoinVoiceChannel(chanid string) (*discordgo.VoiceConnection, error) {
+	var guid string
+
+	guild, err := msgCtx.GetGuild()
+
+	if err != nil {
+		return nil, err
+	}
+
+	guid = guild.ID
+
+	return msgCtx.Session.ChannelVoiceJoin(guid, chanid, false, true)
+}
+
+// JoinUserVoiceChannel joins the voice channel of in which the user with the given userid resides
+// and returns a discordgo.VoiceConnection on success
+func (msgCtx *MsgContext) JoinUserVoiceChannel(userid string) (*discordgo.VoiceConnection, error) {
+	var chanid string
+
+	guild, err := msgCtx.GetGuild()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, vs := range guild.VoiceStates {
+		if vs.UserID == userid {
+			chanid = vs.ChannelID
+		}
+	}
+
+	return msgCtx.JoinVoiceChannel(chanid)
 }
