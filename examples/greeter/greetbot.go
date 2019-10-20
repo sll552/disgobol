@@ -2,20 +2,22 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/sll552/disgobol"
 )
 
 // You should get these either from a config file or via arguments/environment
-const (
-	BotToken    = "asdasdasdasdasd"
-	BotClientID = "123123123123123123"
+var (
+	BotToken    = os.Getenv("BOT_TOKEN")
+	BotClientID = os.Getenv("BOT_CLIENTID")
 	BotPrefix   = "!"
 )
 
 func main() {
 	var err error
 	bot := disgobol.Bot{
+		Name:          "Greetbot",
 		Token:         BotToken,
 		CommandPrefix: BotPrefix,
 		ClientID:      BotClientID}

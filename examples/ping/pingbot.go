@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/sll552/disgobol"
 )
 
 // You should get these either from a config file or via arguments/environment
-const (
-	BotToken    = "asdasdasdasdasd"
-	BotClientID = "123123123123123123"
+var (
+	BotToken    = os.Getenv("BOT_TOKEN")
+	BotClientID = os.Getenv("BOT_CLIENTID")
 	BotPrefix   = "!"
 )
 
@@ -39,7 +40,7 @@ func main() {
 					fmt.Println("Error while sending message: " + err.Error())
 				}
 				taft := time.Now()
-				_, err = resp.EditSimple(resp.Content + " time taken: " + taft.Sub(tbef).String())
+				_, err = resp.EditSimple(resp.Content + ", time taken: " + taft.Sub(tbef).String())
 				if err != nil {
 					fmt.Println("Error while editing message: " + err.Error())
 				}

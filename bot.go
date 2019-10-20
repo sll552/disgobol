@@ -13,6 +13,7 @@ import (
 )
 
 type Bot struct {
+	Name           string
 	CommandPrefix  string
 	Token          string
 	ClientID       string
@@ -89,7 +90,7 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 			// Always add help command
 			cont.WriteString("help: Display this message\n")
 			cont.WriteString("```Invoke the commands with prefix `" +
-				bot.CommandPrefix + "`" + "  (e.g. `" + bot.CommandPrefix + "somecmd`)")
+				bot.CommandPrefix + "`" + " (e.g. `" + bot.CommandPrefix + "somecmd`)")
 			_, _ = msg.RespondSimple(cont.String())
 		}}
 }
@@ -148,6 +149,7 @@ func (bot *Bot) Run() error {
 	// Add Handlers
 	bot.DiscordSession.AddHandler(bot.readyHandler)
 	bot.DiscordSession.AddHandler(bot.messageCreateHandler)
+	bot.DiscordSession.AddHandler(bot.guildCreateHandler)
 
 	// Handle OS signals
 	sc := make(chan os.Signal, 1)
@@ -165,8 +167,28 @@ func (bot *Bot) Run() error {
 	return nil
 }
 
-func (bot *Bot) readyHandler(s *discordgo.Session, m *discordgo.Ready) {
+func (bot *Bot) readyHandler(s *discordgo.Session, r *discordgo.Ready) {
 	_ = s.UpdateStatus(0, bot.CommandPrefix+"help")
+}
+
+func (bot *Bot) guildCreateHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
+	if g.Guild.Unavailable || len(bot.Name) == 0 {
+		return
+	}
+
+	for _, channel := range g.Guild.Channels {
+		if channel.ID == g.Guild.ID {
+			var greetstr strings.Builder
+
+			greetstr.WriteString(bot.Name)
+			greetstr.WriteString(" is ready on this server!")
+			greetstr.WriteString("\nWrite ")
+			greetstr.WriteString("`" + bot.CommandPrefix + "help` to see a list of available commands")
+
+			_, _ = s.ChannelMessageSend(channel.ID, greetstr.String())
+			return
+		}
+	}
 }
 
 func (bot *Bot) messageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
