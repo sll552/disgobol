@@ -3,7 +3,7 @@ module github.com/sll552/disgobol
 go 1.12
 
 require (
-	github.com/bwmarrin/discordgo v0.19.0
+	github.com/bwmarrin/discordgo v0.20.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	golang.org/x/crypto v0.0.0-20190618222545-ea8f1a30c443 // indirect
 	golang.org/x/net v0.0.0-20190619014844-b5b0513f8c1b // indirect
