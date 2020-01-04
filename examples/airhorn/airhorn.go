@@ -16,6 +16,7 @@ var (
 
 func main() {
 	var err error
+
 	bot := disgobol.Bot{
 		Token:         BotToken,
 		CommandPrefix: BotPrefix,
@@ -32,8 +33,16 @@ func main() {
 		disgobol.BotCommand{
 			Name:        "horn",
 			Description: "Plays airhorn sound in the channel of the requesting user",
-			Function: func(msg disgobol.MsgContext) string {
-
+			Function: func(ctx disgobol.MsgContext) string {
+				vc, merr := ctx.JoinUserVoiceChannel(ctx.Author.ID)
+				if merr != nil {
+					_, _ = ctx.RespondError("Could not join voice channel", merr)
+				}
+				defer vc.Close()
+				merr = ctx.PlayDCAFile("./data/airhorn.dca", vc)
+				if merr != nil {
+					_, _ = ctx.RespondError("Error while playing audio", merr)
+				}
 				return ""
 			}})
 	if err != nil {

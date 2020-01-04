@@ -2,11 +2,14 @@ package disgobol
 
 import (
 	"errors"
+	"io"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/jonas747/dca"
 	"github.com/kballard/go-shellquote"
 )
 
@@ -189,4 +192,29 @@ func (msgCtx *MsgContext) JoinUserVoiceChannel(userid string) (*discordgo.VoiceC
 	}
 
 	return msgCtx.JoinVoiceChannel(chanid)
+}
+
+// PlayDCA streams the given dca data to the given discordgo.VoiceConnection
+func (msgCtx *MsgContext) PlayDCA(data io.Reader, channel *discordgo.VoiceConnection) error {
+	decoder := dca.NewDecoder(data)
+	finished := make(chan error)
+	// TODO: lock voice channel globally to avoid overlay playing
+	dca.NewStream(decoder, channel, finished)
+	err := <-finished
+
+	if err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// PlayDCAFile reads a given dca file from disk and streams it to the given discordgo.VoiceConnection
+func (msgCtx *MsgContext) PlayDCAFile(path string, channel *discordgo.VoiceConnection) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	return msgCtx.PlayDCA(file, channel)
 }
