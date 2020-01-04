@@ -27,11 +27,13 @@ const (
 func (rt *MsgRouter) GetRoute(id string) *MsgRoute {
 	rt.rtListMutex.Lock()
 	defer rt.rtListMutex.Unlock()
+
 	for _, r := range rt.routes {
 		if r.ID == id {
 			return r
 		}
 	}
+
 	return nil
 }
 
@@ -41,9 +43,11 @@ func (rt *MsgRouter) AddRoute(nr MsgRoute) (*MsgRoute, error) {
 	if r := rt.GetRoute(nr.ID); r != nil {
 		return r, errors.New(ErrRouteAlreadyExsits)
 	}
+
 	rt.rtListMutex.Lock()
 	rt.routes = append(rt.routes, &nr)
 	rt.rtListMutex.Unlock()
+
 	return &nr, nil
 }
 
@@ -58,6 +62,7 @@ func (rt *MsgRouter) Route(msg MsgContext) error {
 	if rtCnt == 0 {
 		return errors.New(ErrNoRoutes)
 	}
+
 	rtMatched := false
 	rtMatch := []*MsgRoute{}
 
@@ -69,15 +74,18 @@ func (rt *MsgRouter) Route(msg MsgContext) error {
 			rtMatched = true
 		}
 	}
+
 	if !rtMatched && rt.DefaultRoute != nil && rt.DefaultRoute.Matches(&msg) {
 		rtMatch = append(rtMatch, rt.DefaultRoute)
 	}
+
 	rt.rtListMutex.Unlock()
 
 	// then execute their actions
 	for _, r := range rtMatch {
 		r.Action(msg)
 	}
+
 	if len(rtMatch) > 0 {
 		return nil
 	}

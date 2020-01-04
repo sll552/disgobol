@@ -120,7 +120,6 @@ func TestBot_AddCommand(t *testing.T) {
 	if !containscmd || err != nil {
 		t.Errorf("Bot.AddCommand() does not contain command, error: %v", err)
 	}
-
 }
 
 func TestBot_messageCreateHandler(t *testing.T) {

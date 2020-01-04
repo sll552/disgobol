@@ -35,26 +35,33 @@ const (
 	ErrTokenInvalid       = "the provided Token is invalid"
 	ErrPrefixNotSupported = "the provided Prefix is not supported, " +
 		"please choose a non-word character or string (regexp: '\\W+')"
+	TokenLength    = 59
+	ClientIDLength = 18
 )
 
 func (bot *Bot) validate() error {
 	//Token is always 59 chars long
-	if len(bot.Token) != 59 {
+	if len(bot.Token) != TokenLength {
 		return errors.New(ErrTokenInvalid)
 	}
+
 	r := regexp.MustCompile(`\w+`)
+
 	if !(len(bot.CommandPrefix) > 0) || r.MatchString(bot.CommandPrefix) {
 		return errors.New(ErrPrefixNotSupported)
 	}
+
 	return nil
 }
 
 // GetInviteURL returns the invite URL for this bot if a valid client id was provided
 func (bot *Bot) GetInviteURL() (string, error) {
-	if len(bot.ClientID) != 18 {
+	if len(bot.ClientID) != ClientIDLength {
 		return "", errors.New(ErrClientIDInvalid)
 	}
+
 	u, err := url.Parse(discordgo.EndpointOauth2 + "authorize")
+
 	if err != nil {
 		return "", err
 	}
@@ -81,7 +88,8 @@ func (bot *Bot) generateHelpCommand() MsgRoute {
 				cont.WriteString(cmd.Description + "\n")
 				if len(cmd.Args) > 0 {
 					cont.WriteString("  Arguments:\n")
-					for _, carg := range cmd.Args {
+					for argidx := range cmd.Args {
+						carg := &cmd.Args[argidx]
 						cont.WriteString("    - " + carg.Name + ": ")
 						cont.WriteString(carg.Description + "\n")
 					}
@@ -102,7 +110,7 @@ func (bot *Bot) AddCommand(bcmd BotCommand) error {
 		Matches: MatchStartWord(bot.CommandPrefix + bcmd.Name),
 		// #nosec G104
 		Action: func(msg MsgContext) {
-			err := msg.ParseArgs(&bcmd.Args)
+			err := msg.ParseArgs(bcmd.Args)
 			if err != nil {
 				_, _ = msg.RespondError("Parsing arguments failed", err)
 				return
@@ -113,11 +121,14 @@ func (bot *Bot) AddCommand(bcmd BotCommand) error {
 			}
 		}}
 	cmdrt, err := bot.messageRouter.AddRoute(brt)
+
 	if err != nil {
 		return err
 	}
+
 	bcmd.Route = cmdrt
 	bot.commands = append(bot.commands, &bcmd)
+
 	return nil
 }
 
@@ -139,6 +150,7 @@ func (bot *Bot) Run() error {
 	// Generate default route
 	helprt := bot.generateHelpCommand()
 	_, err = bot.messageRouter.AddRoute(helprt)
+
 	if err != nil {
 		return err
 	}
@@ -157,6 +169,7 @@ func (bot *Bot) Run() error {
 
 	err = bot.DiscordSession.Open()
 	defer bot.DiscordSession.Close()
+
 	if err != nil {
 		return err
 	}
@@ -186,6 +199,7 @@ func (bot *Bot) guildCreateHandler(s *discordgo.Session, g *discordgo.GuildCreat
 			greetstr.WriteString("`" + bot.CommandPrefix + "help` to see a list of available commands")
 
 			_, _ = s.ChannelMessageSend(channel.ID, greetstr.String())
+
 			return
 		}
 	}
@@ -196,7 +210,9 @@ func (bot *Bot) messageCreateHandler(s *discordgo.Session, m *discordgo.MessageC
 	if m.Author.Bot {
 		return
 	}
+
 	msgctx, err := NewMsgContext(*m, s)
+
 	if err != nil {
 		return
 	}

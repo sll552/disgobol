@@ -44,7 +44,7 @@ func TestNewMsgContext(t *testing.T) {
 
 func TestMsgContext_ParseArgs(t *testing.T) {
 	type args struct {
-		args *[]CommandArg
+		args []CommandArg
 	}
 	var empty map[string]interface{}
 
@@ -65,7 +65,7 @@ func TestMsgContext_ParseArgs(t *testing.T) {
 				},
 			},
 			args: args{
-				args: &[]CommandArg{},
+				args: []CommandArg{},
 			},
 			want:    empty,
 			wantErr: false,
@@ -78,7 +78,7 @@ func TestMsgContext_ParseArgs(t *testing.T) {
 				},
 			},
 			args: args{
-				args: &[]CommandArg{
+				args: []CommandArg{
 					{
 						Name:    "int",
 						Example: 123,
@@ -108,7 +108,7 @@ func TestMsgContext_ParseArgs(t *testing.T) {
 				},
 			},
 			args: args{
-				args: &[]CommandArg{
+				args: []CommandArg{
 					{
 						Name:    "int",
 						Example: 123,
@@ -139,7 +139,7 @@ func TestMsgContext_ParseArgs(t *testing.T) {
 				},
 			},
 			args: args{
-				args: &[]CommandArg{
+				args: []CommandArg{
 					{
 						Name:    "int",
 						Example: 123,
@@ -166,7 +166,7 @@ func TestMsgContext_ParseArgs(t *testing.T) {
 				},
 			},
 			args: args{
-				args: &[]CommandArg{
+				args: []CommandArg{
 					{
 						Name:    "int",
 						Example: 123,
@@ -193,7 +193,7 @@ func TestMsgContext_ParseArgs(t *testing.T) {
 				},
 			},
 			args: args{
-				args: &[]CommandArg{
+				args: []CommandArg{
 					{
 						Name:    "int",
 						Example: 123,

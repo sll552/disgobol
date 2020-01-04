@@ -84,9 +84,9 @@ func (msgCtx *MsgContext) EditSimple(newCont string) (*MsgContext, error) {
 // ParseArgs parses arguments from the current message and fills the MsgContext.Args array
 // according to the given argument map.
 // An Error is returned if argument parsing fails or the types do not match
-func (msgCtx *MsgContext) ParseArgs(args *[]CommandArg) error {
+func (msgCtx *MsgContext) ParseArgs(args []CommandArg) error {
 	// Dont do anything if no arguments are defined
-	if len(*args) == 0 {
+	if len(args) == 0 {
 		return nil
 	}
 
@@ -108,13 +108,13 @@ func (msgCtx *MsgContext) ParseArgs(args *[]CommandArg) error {
 		tmp[i] = v
 	}
 
-	if len(tmp) != len(*args) {
+	if len(tmp) != len(args) {
 		return errors.New(ErrArgCntMismatch)
 	}
 
 	// Cast args to their required type
-	for idx, arg := range *args {
-		switch arg.Example.(type) {
+	for idx := range args {
+		switch args[idx].Example.(type) {
 		case int:
 			tmp[idx], err = strconv.ParseInt(tmp[idx].(string), 0, 64)
 		case bool:
@@ -130,11 +130,11 @@ func (msgCtx *MsgContext) ParseArgs(args *[]CommandArg) error {
 	// build the resulting map and use index for arguments without a name
 	msgCtx.Args = make(map[string]interface{})
 
-	for idx, arg := range *args {
-		if len(arg.Name) == 0 {
+	for idx := range args {
+		if len(args[idx].Name) == 0 {
 			msgCtx.Args[strconv.Itoa(idx)] = tmp[idx]
 		} else {
-			msgCtx.Args[arg.Name] = tmp[idx]
+			msgCtx.Args[args[idx].Name] = tmp[idx]
 		}
 	}
 
